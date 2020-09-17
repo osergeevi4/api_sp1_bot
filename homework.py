@@ -2,17 +2,22 @@ import os
 import requests
 import telegram
 import time
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()
 
-
-PRACTICUM_TOKEN = os.getenv("PRACTICUM_TOKEN")
+PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 URL_PRACT = 'https://praktikum.yandex.ru/api/user_api/homework_statuses/'
+PROXY = telegram.utils.request.Request(proxy_url='socks5://18.179.178.45:1080')
+BOT = telegram.Bot(token=TELEGRAM_TOKEN, request=PROXY)
+
 
 def parse_homework_status(homework):
+    if 'homework_name' and 'status' not in homework:
+        logging.error('Сервачек не хочет работать:(')
     homework_name = homework['homework_name']
     if homework['status'] == 'rejected':
         verdict = 'К сожалению в работе нашлись ошибки.'
@@ -24,13 +29,17 @@ def parse_homework_status(homework):
 def get_homework_statuses(current_timestamp):
     headers = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
     params = {'from_date': current_timestamp}
-    homework_statuses = requests.get(URL_PRACT, headers=headers, params=params)
-    return homework_statuses.json()
+    if current_timestamp is None:
+        logging.error(f'Проверь значение {current_timestamp}')
+    try:
+        homework_statuses = requests.get(URL_PRACT, headers=headers, params=params)
+        return homework_statuses.json()
+    except:
+        logging.error('Проверь что передаешь!')
 
 
 def send_message(message):
-    proxy = telegram.utils.request.Request(proxy_url='socks5://185.151.243.37:1080')
-    bot = telegram.Bot(token=TELEGRAM_TOKEN, request=proxy)
+    bot = BOT
     return bot.send_message(chat_id=CHAT_ID, text=message)
 
 
@@ -46,7 +55,7 @@ def main():
             time.sleep(300)  # опрашивать раз в пять минут
 
         except Exception as e:
-            print(f'Бот упал с ошибкой: {e}')
+            logging.error(f'Бот упал с ошибкой: {e}')
             time.sleep(5)
             continue
 
