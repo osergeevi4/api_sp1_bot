@@ -11,15 +11,14 @@ PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 URL_PRACT = 'https://praktikum.yandex.ru/api/user_api/homework_statuses/'
-#PROXY = telegram.utils.request.Request(proxy_url='socks5://18.179.178.45:1080')
 BOT = telegram.Bot(token=TELEGRAM_TOKEN)
 
 
 def parse_homework_status(homework):
-    if 'homework_name' and 'status' not in homework:
+    if 'homework_name' and 'status' in homework.keys():
         logging.error('Сервачек не хочет работать:(')
     homework_name = homework['homework_name']
-    if homework['status'] == 'rejected':
+    if homework['status'] != 'approved':
         verdict = 'К сожалению в работе нашлись ошибки.'
     else:
         verdict = 'Ревьюеру всё понравилось, можно приступать к следующему уроку.'
