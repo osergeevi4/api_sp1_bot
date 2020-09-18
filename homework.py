@@ -15,7 +15,7 @@ BOT = telegram.Bot(token=TELEGRAM_TOKEN)
 
 
 def parse_homework_status(homework):
-    if 'homework_name' and 'status' in homework.keys():
+    if 'homework_name' and 'status' not in homework.keys():
         logging.error('Сервачек не хочет работать:(')
     homework_name = homework['homework_name']
     if homework['status'] != 'approved':
