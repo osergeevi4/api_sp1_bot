@@ -15,7 +15,7 @@ BOT = telegram.Bot(token=TELEGRAM_TOKEN)
 
 
 def parse_homework_status(homework):
-    if 'homework_name' and 'status' not in homework.keys():
+    if 'homework_name' not in homework and 'status' not in homework:
         logging.error('Сервачек не хочет работать:(')
     homework_name = homework['homework_name']
     if homework['status'] != 'approved':
@@ -28,8 +28,6 @@ def parse_homework_status(homework):
 def get_homework_statuses(current_timestamp):
     headers = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
     params = {'from_date': current_timestamp}
-    if current_timestamp is None:
-        logging.error(f'Проверь значение {current_timestamp}')
     try:
         homework_statuses = requests.get(URL_PRACT, headers=headers, params=params)
         return homework_statuses.json()
@@ -44,6 +42,8 @@ def send_message(message):
 
 def main():
     current_timestamp = int(time.time())  # начальное значение timestamp
+    if current_timestamp is None:
+        current_timestamp = int(time.time())
 
     while True:
         try:
